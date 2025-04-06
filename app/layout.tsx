@@ -1,5 +1,4 @@
 import type React from "react"
-import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { RefinedLayout } from "@/components/refined-layout"
@@ -23,6 +22,12 @@ export default function RootLayout({
   )
 }
 
+import "./globals.css"
+
 
 
 import './globals.css'
+
+export const metadata = {
+      generator: 'v0.dev'
+    };

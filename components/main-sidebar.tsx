@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   BookOpen,
   Home,
@@ -16,7 +16,7 @@ import {
   LogOut,
   User,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import {
   Sidebar,
@@ -46,13 +46,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { authAPI } from "@/lib/api"
+import { toast } from "@/hooks/use-toast"
+import type { User as UserType } from "@/lib/auth"
 
 export function MainSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   // 跟踪展开的菜单项
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
+
+  // 用户状态
+  const [user, setUser] = useState<UserType | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // 获取当前用户
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const userData = await authAPI.getCurrentUser()
+        setUser(userData)
+      } catch (error) {
+        console.error("获取用户信息失败:", error)
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [])
 
   const isActive = (path: string) => {
     return pathname === path
@@ -66,6 +91,25 @@ export function MainSidebar() {
   // 检查菜单项是否展开
   const isExpanded = (title: string) => {
     return expandedItems.includes(title)
+  }
+
+  // 处理登出
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout()
+      toast({
+        title: "登出成功",
+        description: "您已成功登出",
+      })
+      setUser(null)
+      router.push("/")
+    } catch (error) {
+      toast({
+        title: "登出失败",
+        description: "请稍后再试",
+        variant: "destructive",
+      })
+    }
   }
 
   // 博客前台导航项
@@ -155,9 +199,8 @@ export function MainSidebar() {
     },
   ]
 
-  // 模拟用户登录状态
-  const isLoggedIn = true
-  const isAdmin = true
+  // 检查用户是否是管理员
+  const isAdmin = user?.role === "admin" || user?.role === "editor"
 
   return (
     <Sidebar collapsible="icon">
@@ -270,12 +313,12 @@ export function MainSidebar() {
 
       {/* 侧边栏底部 */}
       <SidebarFooter>
-        {isLoggedIn ? (
+        {user ? (
           isCollapsed ? (
             <div className="flex justify-center p-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg?height=32&width=32" alt="用户头像" />
-                <AvatarFallback>用</AvatarFallback>
+                <AvatarImage src="/placeholder.svg?height=32&width=32" alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
           ) : (
@@ -284,12 +327,12 @@ export function MainSidebar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="w-full justify-start gap-2 px-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt="用户头像" />
-                      <AvatarFallback>用</AvatarFallback>
+                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt={user.name} />
+                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
-                      <span className="text-sm font-medium">管理员</span>
-                      <span className="text-xs text-muted-foreground">admin@example.com</span>
+                      <span className="text-sm font-medium">{user.name}</span>
+                      <span className="text-xs text-muted-foreground">{user.email}</span>
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
@@ -307,11 +350,9 @@ export function MainSidebar() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/" className="flex items-center gap-2 cursor-pointer">
-                      <LogOut className="h-4 w-4" />
-                      <span>退出登录</span>
-                    </Link>
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer">
+                    <LogOut className="h-4 w-4" />
+                    <span>退出登录</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -333,16 +374,6 @@ export function MainSidebar() {
                 <span>注册</span>
               </Button>
             </Link>
-          </div>
-        )}
-
-        {!isCollapsed && (
-          <div className="px-4 py-2 flex justify-between">
-            <ThemeToggle />
-            <Button variant="outline" size="icon" className="rounded-full">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">通知</span>
-            </Button>
           </div>
         )}
       </SidebarFooter>

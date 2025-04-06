@@ -9,20 +9,66 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { UserPlus } from "lucide-react"
+import { authAPI } from "@/lib/api"
+import { toast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [name, setName] = React.useState("")
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
+  const [confirmPassword, setConfirmPassword] = React.useState("")
+  const [acceptTerms, setAcceptTerms] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "密码不匹配",
+        description: "请确保两次输入的密码相同",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!acceptTerms) {
+      toast({
+        title: "请接受条款",
+        description: "您需要接受服务条款和隐私政策才能注册",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
-    // 模拟注册过程
-    setTimeout(() => {
+    try {
+      const result = await authAPI.register(name, email, password)
+
+      if (result.success) {
+        toast({
+          title: "注册成功",
+          description: "您的账号已创建成功！",
+        })
+        router.push("/")
+      } else {
+        toast({
+          title: "注册失败",
+          description: result.message || "创建账号时出错",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "注册失败",
+        description: error instanceof Error ? error.message : "发生未知错误",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-      router.push("/login")
-    }, 1500)
+    }
   }
 
   return (
@@ -34,23 +80,15 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">姓</Label>
-                <Input
-                  id="firstName"
-                  required
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">名</Label>
-                <Input
-                  id="lastName"
-                  required
-                  className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">姓名</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">邮箱</Label>
@@ -58,6 +96,8 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               />
@@ -67,6 +107,8 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               />
@@ -76,12 +118,19 @@ export default function RegisterPage() {
               <Input
                 id="confirmPassword"
                 type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" required />
+              <Checkbox
+                id="terms"
+                checked={acceptTerms}
+                onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                required
+              />
               <Label htmlFor="terms" className="text-sm">
                 我同意{" "}
                 <Link href="/terms" className="text-primary hover:underline transition-all duration-300">

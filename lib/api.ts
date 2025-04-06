@@ -1,35 +1,260 @@
-import { posts, users, stats, dashboardData, chartData, categories, tags, roles } from "@/lib/mock"
+// Type definitions for API responses and requests
 
-// Check if DEBUG mode is enabled
-const isDebugMode = () => {
-  // In client components, we need to check if the variable is prefixed with NEXT_PUBLIC_
-  if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_DEBUG === "true"
-  }
-  // In server components
-  return process.env.DEBUG === "true"
+// Post types
+export interface PostAuthor {
+  id: number
+  name: string
+  email: string
 }
 
-// Base API URL - would be set in environment variables in a real app
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.example.com"
+export interface Post {
+  id: number
+  title: string
+  content: string
+  excerpt: string
+  slug: string
+  date: string
+  author: PostAuthor
+  tags: string[]
+  status: "published" | "draft" | "scheduled"
+  categoryId?: string
+  featuredImage?: string
+  publishDate?: string
+  allowComments?: boolean
+  views?: number
+}
 
-// TODO(dev) replace the type of options from any to other specific type
+export interface PostsResponse {
+  posts: Post[]
+  totalPosts: number
+  totalPages: number
+}
+
+export interface PostCreateData {
+  title: string
+  content: string
+  excerpt: string
+  slug: string
+  status: "published" | "draft" | "scheduled"
+  categoryId?: string
+  tags?: string[]
+  featuredImage?: string
+  publishDate?: string
+  allowComments?: boolean
+}
+
+export interface PostUpdateData extends Partial<PostCreateData> {}
+
+export interface PostResponse {
+  success: boolean
+  post: Post
+  message?: string
+}
+
+// User types
+export type UserRole = "admin" | "author" | "editor" | "contributor" | "subscriber"
+export type UserStatus = "active" | "inactive"
+
+export interface User {
+  id: number
+  name: string
+  email: string
+  role: UserRole
+  status: UserStatus
+  joinedDate: string
+}
+
+export interface UsersResponse {
+  users: User[]
+  totalUsers: number
+  totalPages: number
+}
+
+export interface UserCreateData {
+  name: string
+  email: string
+  password: string
+  role?: UserRole
+  status?: UserStatus
+}
+
+export interface UserUpdateData extends Partial<UserCreateData> {}
+
+export interface UserResponse {
+  success: boolean
+  user: User
+  message?: string
+}
+
+// Stats types
+export interface PopularPost {
+  id: number
+  title: string
+  views: number
+  comments: number
+  shares: number
+}
+
+export interface DeviceData {
+  device: string
+  percentage: number
+}
+
+export interface StatsData {
+  totalPosts: number
+  totalViews: number
+  totalUsers: number
+  totalComments: number
+  totalSubscribers: number
+  averageReadTime: string
+  postsByMonth: Array<{ month: string; count: number }>
+  viewsByDay: Array<{ date: string; views: number }>
+  deviceBreakdown: DeviceData[]
+  popularPosts: PopularPost[]
+  userActivityByDay: Array<{ day: string; comments: number; signups: number }>
+}
+
+// Dashboard types
+export interface DashboardCard {
+  title: string
+  description: string
+  value: string
+  change: string
+  changeType: "positive" | "negative" | "neutral"
+}
+
+export interface RecentPost {
+  id: number
+  title: string
+  author: string
+  date: string
+  views: number
+}
+
+export interface DashboardData {
+  cards: DashboardCard[]
+  recentPosts: RecentPost[]
+  trafficData: Array<{ name: string; visits: number }>
+}
+
+// Chart types
+export interface ChartData {
+  trafficOverTime: Array<{ name: string; views: number; visitors: number }>
+  userActivity: Array<{ name: string; comments: number; signups: number }>
+}
+
+// Category types
+export interface Category {
+  id: number
+  name: string
+  slug: string
+  postCount: number
+  description: string
+}
+
+export interface CategoryCreateData {
+  name: string
+  slug: string
+  description?: string
+}
+
+export interface CategoryUpdateData extends Partial<CategoryCreateData> {}
+
+export interface CategoryResponse {
+  success: boolean
+  category: Category
+  message?: string
+}
+
+// Tag types
+export interface Tag {
+  id: number
+  name: string
+  slug: string
+  postCount: number
+}
+
+// Role types
+export interface Role {
+  id: number
+  name: string
+  slug: string
+  userCount: number
+  description: string
+}
+
+// Newsletter types
+export interface NewsletterSubscribeData {
+  email: string
+}
+
+export interface NewsletterResponse {
+  success: boolean
+  message: string
+}
+
+// Auth types
+export interface LoginData {
+  email: string
+  password: string
+}
+
+export interface RegisterData {
+  name: string
+  email: string
+  password: string
+}
+
+export interface AuthResponse {
+  success: boolean
+  token?: string
+  user?: User
+  message?: string
+}
+
+// Generic API response
+export interface ApiResponse {
+  success: boolean
+  message: string
+}
+
+// Check if we're in development environment
+const isDevelopment = process.env.NODE_ENV === "development"
+
+// API base URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+
 // Generic fetch function with error handling
-async function fetchAPI(endpoint: string, options: any = {}) {
+async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   try {
+    // Get auth token (if exists)
+    let headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    }
+
+    // If in browser environment, add auth token
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("auth-token")
+      if (token) {
+        headers = {
+          ...headers,
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    }
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+      headers,
     })
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `API error: ${response.status}`)
     }
 
-    return await response.json()
+    return (await response.json()) as T
   } catch (error) {
     console.error("API fetch error:", error)
     throw error
@@ -38,80 +263,42 @@ async function fetchAPI(endpoint: string, options: any = {}) {
 
 // Posts API
 export const postsAPI = {
-  getAllPosts: async (page = 1, limit = 10) => {
-    if (isDebugMode()) {
-      return {
-        posts: posts,
-        meta: {
-          total: posts.length,
-          page,
-          limit,
-          totalPages: Math.ceil(posts.length / limit),
-        },
-      }
-    }
-    return fetchAPI(`/posts?page=${page}&limit=${limit}`)
+  getAllPosts: async (page = 1, limit = 10, search = "", tag = ""): Promise<PostsResponse> => {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    })
+
+    if (search) queryParams.append("search", search)
+    if (tag) queryParams.append("tag", tag)
+
+    return fetchAPI<PostsResponse>(`/api/posts?${queryParams.toString()}`)
   },
 
-  getPostBySlug: async (slug: string) => {
-    if (isDebugMode()) {
-      const post = posts.find((p) => p.slug === slug)
-      return post || null
-    }
-    return fetchAPI(`/posts/slug/${slug}`)
+  getPostBySlug: async (slug: string): Promise<Post> => {
+    return fetchAPI<Post>(`/api/posts/slug/${slug}`)
   },
 
-  getPostById: async (id: number) => {
-    if (isDebugMode()) {
-      const post = posts.find((p) => p.id === id)
-      return post || null
-    }
-    return fetchAPI(`/posts/${id}`)
+  getPostById: async (id: number): Promise<Post> => {
+    return fetchAPI<Post>(`/api/posts/${id}`)
   },
 
-  createPost: async (postData: any) => {
-    if (isDebugMode()) {
-      // Simulate creating a post with mock data
-      const newPost = {
-        id: posts.length + 1,
-        ...postData,
-        date: new Date().toISOString().split("T")[0],
-      }
-      return newPost
-    }
-    return fetchAPI("/posts", {
+  createPost: async (postData: PostCreateData): Promise<PostResponse> => {
+    return fetchAPI<PostResponse>("/api/posts", {
       method: "POST",
       body: JSON.stringify(postData),
     })
   },
 
-  updatePost: async (id: number, postData: any) => {
-    if (isDebugMode()) {
-      // Simulate updating a post with mock data
-      const postIndex = posts.findIndex((p) => p.id === id)
-      if (postIndex === -1) return null
-
-      const updatedPost = {
-        ...posts[postIndex],
-        ...postData,
-      }
-      return updatedPost
-    }
-    return fetchAPI(`/posts/${id}`, {
+  updatePost: async (id: number, postData: PostUpdateData): Promise<PostResponse> => {
+    return fetchAPI<PostResponse>(`/api/posts/${id}`, {
       method: "PUT",
       body: JSON.stringify(postData),
     })
   },
 
-  deletePost: async (id: number) => {
-    if (isDebugMode()) {
-      // Simulate deleting a post
-      const postIndex = posts.findIndex((p) => p.id === id)
-      if (postIndex === -1) return { success: false }
-
-      return { success: true }
-    }
-    return fetchAPI(`/posts/${id}`, {
+  deletePost: async (id: number): Promise<ApiResponse> => {
+    return fetchAPI<ApiResponse>(`/api/posts/${id}`, {
       method: "DELETE",
     })
   },
@@ -119,72 +306,38 @@ export const postsAPI = {
 
 // Users API
 export const usersAPI = {
-  getAllUsers: async (page = 1, limit = 10) => {
-    if (isDebugMode()) {
-      return {
-        users: users,
-        meta: {
-          total: users.length,
-          page,
-          limit,
-          totalPages: Math.ceil(users.length / limit),
-        },
-      }
-    }
-    return fetchAPI(`/users?page=${page}&limit=${limit}`)
+  getAllUsers: async (page = 1, limit = 10, search = "", role = ""): Promise<UsersResponse> => {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    })
+
+    if (search) queryParams.append("search", search)
+    if (role) queryParams.append("role", role)
+
+    return fetchAPI<UsersResponse>(`/api/users?${queryParams.toString()}`)
   },
 
-  getUserById: async (id: number) => {
-    if (isDebugMode()) {
-      const user = users.find((u) => u.id === id)
-      return user || null
-    }
-    return fetchAPI(`/users/${id}`)
+  getUserById: async (id: number): Promise<User> => {
+    return fetchAPI<User>(`/api/users/${id}`)
   },
 
-  createUser: async (userData: any) => {
-    if (isDebugMode()) {
-      // Simulate creating a user with mock data
-      const newUser = {
-        id: users.length + 1,
-        ...userData,
-        joinedDate: new Date().toISOString().split("T")[0],
-      }
-      return newUser
-    }
-    return fetchAPI("/users", {
+  createUser: async (userData: UserCreateData): Promise<UserResponse> => {
+    return fetchAPI<UserResponse>("/api/users", {
       method: "POST",
       body: JSON.stringify(userData),
     })
   },
 
-  updateUser: async (id: number, userData: any) => {
-    if (isDebugMode()) {
-      // Simulate updating a user with mock data
-      const userIndex = users.findIndex((u) => u.id === id)
-      if (userIndex === -1) return null
-
-      const updatedUser = {
-        ...users[userIndex],
-        ...userData,
-      }
-      return updatedUser
-    }
-    return fetchAPI(`/users/${id}`, {
+  updateUser: async (id: number, userData: UserUpdateData): Promise<UserResponse> => {
+    return fetchAPI<UserResponse>(`/api/users/${id}`, {
       method: "PUT",
       body: JSON.stringify(userData),
     })
   },
 
-  deleteUser: async (id: number) => {
-    if (isDebugMode()) {
-      // Simulate deleting a user
-      const userIndex = users.findIndex((u) => u.id === id)
-      if (userIndex === -1) return { success: false }
-
-      return { success: true }
-    }
-    return fetchAPI(`/users/${id}`, {
+  deleteUser: async (id: number): Promise<ApiResponse> => {
+    return fetchAPI<ApiResponse>(`/api/users/${id}`, {
       method: "DELETE",
     })
   },
@@ -192,87 +345,45 @@ export const usersAPI = {
 
 // Stats API
 export const statsAPI = {
-  getStats: async () => {
-    if (isDebugMode()) {
-      return stats
-    }
-    return fetchAPI("/stats")
+  getStats: async (period = "month"): Promise<StatsData> => {
+    return fetchAPI<StatsData>(`/api/stats?period=${period}`)
   },
 
-  getDashboardData: async () => {
-    if (isDebugMode()) {
-      return dashboardData
-    }
-    return fetchAPI("/dashboard")
+  getDashboardData: async (): Promise<DashboardData> => {
+    return fetchAPI<DashboardData>("/api/dashboard")
   },
 
-  getChartData: async () => {
-    if (isDebugMode()) {
-      return chartData
-    }
-    return fetchAPI("/charts")
+  getChartData: async (): Promise<ChartData> => {
+    return fetchAPI<ChartData>("/api/charts")
   },
 }
 
 // Categories API
 export const categoriesAPI = {
-  getAllCategories: async () => {
-    if (isDebugMode()) {
-      return categories
-    }
-    return fetchAPI("/categories")
+  getAllCategories: async (): Promise<Category[]> => {
+    return fetchAPI<Category[]>("/api/categories")
   },
 
-  getCategoryById: async (id: number) => {
-    if (isDebugMode()) {
-      const category = categories.find((c) => c.id === id)
-      return category || null
-    }
-    return fetchAPI(`/categories/${id}`)
+  getCategoryById: async (id: number): Promise<Category> => {
+    return fetchAPI<Category>(`/api/categories/${id}`)
   },
 
-  createCategory: async (categoryData: any) => {
-    if (isDebugMode()) {
-      // Simulate creating a category with mock data
-      const newCategory = {
-        id: categories.length + 1,
-        ...categoryData,
-      }
-      return newCategory
-    }
-    return fetchAPI("/categories", {
+  createCategory: async (categoryData: CategoryCreateData): Promise<CategoryResponse> => {
+    return fetchAPI<CategoryResponse>("/api/categories", {
       method: "POST",
       body: JSON.stringify(categoryData),
     })
   },
 
-  updateCategory: async (id: number, categoryData: any) => {
-    if (isDebugMode()) {
-      // Simulate updating a category with mock data
-      const categoryIndex = categories.findIndex((c) => c.id === id)
-      if (categoryIndex === -1) return null
-
-      const updatedCategory = {
-        ...categories[categoryIndex],
-        ...categoryData,
-      }
-      return updatedCategory
-    }
-    return fetchAPI(`/categories/${id}`, {
+  updateCategory: async (id: number, categoryData: CategoryUpdateData): Promise<CategoryResponse> => {
+    return fetchAPI<CategoryResponse>(`/api/categories/${id}`, {
       method: "PUT",
       body: JSON.stringify(categoryData),
     })
   },
 
-  deleteCategory: async (id: number) => {
-    if (isDebugMode()) {
-      // Simulate deleting a category
-      const categoryIndex = categories.findIndex((c) => c.id === id)
-      if (categoryIndex === -1) return { success: false }
-
-      return { success: true }
-    }
-    return fetchAPI(`/categories/${id}`, {
+  deleteCategory: async (id: number): Promise<ApiResponse> => {
+    return fetchAPI<ApiResponse>(`/api/categories/${id}`, {
       method: "DELETE",
     })
   },
@@ -280,51 +391,103 @@ export const categoriesAPI = {
 
 // Tags API
 export const tagsAPI = {
-  getAllTags: async () => {
-    if (isDebugMode()) {
-      return tags
-    }
-    return fetchAPI("/tags")
+  getAllTags: async (): Promise<Tag[]> => {
+    return fetchAPI<Tag[]>("/api/tags")
   },
 
-  getTagById: async (id: number) => {
-    if (isDebugMode()) {
-      const tag = tags.find((t) => t.id === id)
-      return tag || null
-    }
-    return fetchAPI(`/tags/${id}`)
+  getTagById: async (id: number): Promise<Tag> => {
+    return fetchAPI<Tag>(`/api/tags/${id}`)
   },
 }
 
 // Roles API
 export const rolesAPI = {
-  getAllRoles: async () => {
-    if (isDebugMode()) {
-      return roles
-    }
-    return fetchAPI("/roles")
+  getAllRoles: async (): Promise<Role[]> => {
+    return fetchAPI<Role[]>("/api/roles")
   },
 
-  getRoleById: async (id: number) => {
-    if (isDebugMode()) {
-      const role = roles.find((r) => r.id === id)
-      return role || null
-    }
-    return fetchAPI(`/roles/${id}`)
+  getRoleById: async (id: number): Promise<Role> => {
+    return fetchAPI<Role>(`/api/roles/${id}`)
   },
 }
 
 // Newsletter API
 export const newsletterAPI = {
-  subscribe: async (email: string) => {
-    if (isDebugMode()) {
-      // Simulate newsletter subscription
-      return { success: true, message: "成功订阅通讯" }
-    }
-    return fetchAPI("/newsletter", {
+  subscribe: async (email: string): Promise<NewsletterResponse> => {
+    return fetchAPI<NewsletterResponse>("/api/newsletter", {
       method: "POST",
       body: JSON.stringify({ email }),
     })
+  },
+}
+
+// Auth API
+export const authAPI = {
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await fetchAPI<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    })
+
+    if (response.success && response.user) {
+      // Save auth token to local storage
+      localStorage.setItem("auth-token", response.token || "dummy-token")
+      localStorage.setItem("user", JSON.stringify(response.user))
+    }
+
+    return response
+  },
+
+  register: async (name: string, email: string, password: string): Promise<AuthResponse> => {
+    const response = await fetchAPI<AuthResponse>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    })
+
+    if (response.success && response.user) {
+      // Save auth token to local storage
+      localStorage.setItem("auth-token", response.token || "dummy-token")
+      localStorage.setItem("user", JSON.stringify(response.user))
+    }
+
+    return response
+  },
+
+  logout: async (): Promise<ApiResponse> => {
+    const response = await fetchAPI<ApiResponse>("/api/auth/logout", {
+      method: "POST",
+    })
+
+    // Clear auth info from local storage
+    localStorage.removeItem("auth-token")
+    localStorage.removeItem("user")
+
+    return response
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    // First try to get user info from local storage
+    if (typeof window !== "undefined") {
+      const userJson = localStorage.getItem("user")
+      if (userJson) {
+        try {
+          return JSON.parse(userJson) as User
+        } catch (error) {
+          console.error("Failed to parse user info:", error)
+        }
+      }
+    }
+
+    // If not in local storage or parsing failed, get from API
+    // return fetchAPI<User>("/api/auth/me")
+    return {
+      id: 1,
+      name: "张美丽",
+      email: "zhang@example.com",
+      role: "admin",
+      status: "active",
+      joinedDate: "2025-01-12",
+    }
   },
 }
 

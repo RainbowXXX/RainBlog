@@ -115,6 +115,7 @@ html.dark {
 
 html {
   transition: background-color 0.3s ease, color 0.3s ease;
+  scroll-behavior: smooth;
 }
 
 /* Sidebar transitions */
@@ -155,5 +156,36 @@ html {
 
 [data-collapsible="icon"] [data-sidebar="menu-button"]:hover {
   transform: scale(1.05);
+}
+
+/* TOC Sidebar Styles */
+@media (max-width: 1023px) {
+  .toc-sidebar {
+    display: none;
+  }
+}
+
+/* Style for active TOC items */
+.toc-active {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--primary));
+}
+
+/* Custom scrollbar for TOC */
+.toc-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 2px;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
 }
 

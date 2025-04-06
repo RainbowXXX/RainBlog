@@ -2,26 +2,53 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { LogIn } from "lucide-react"
+import { authAPI } from "@/lib/api"
+import { toast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirect") || "/"
+
   const [isLoading, setIsLoading] = React.useState(false)
+  const [email, setEmail] = React.useState("")
+  const [password, setPassword] = React.useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // 模拟登录过程
-    setTimeout(() => {
+    try {
+      const result = await authAPI.login(email, password)
+
+      if (result.success) {
+        toast({
+          title: "登录成功",
+          description: "欢迎回来！",
+        })
+        router.push(redirectTo)
+      } else {
+        toast({
+          title: "登录失败",
+          description: result.message || "邮箱或密码不正确",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "登录失败",
+        description: error instanceof Error ? error.message : "发生未知错误",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
-      router.push("/")
-    }, 1500)
+    }
   }
 
   return (
@@ -40,6 +67,8 @@ export default function LoginPage() {
                 type="email"
                 placeholder="your@email.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -47,7 +76,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">密码</Label>
                 <Link
-                  href="/forgot-password"
+                  href="/password/forgot"
                   className="text-sm text-primary hover:underline transition-all duration-300"
                 >
                   忘记密码?
@@ -57,6 +86,8 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="transition-all duration-300 focus:ring-2 focus:ring-primary/20"
               />
             </div>

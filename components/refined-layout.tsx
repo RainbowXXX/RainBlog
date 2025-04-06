@@ -14,6 +14,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import {Button} from "@/components/ui/button";
+import {Bell} from "lucide-react";
 
 interface RefinedLayoutProps {
   children: React.ReactNode
@@ -110,6 +112,10 @@ export function RefinedLayout({ children }: RefinedLayoutProps) {
           </div>
 
           <div className="flex items-center">
+            <Button variant="ghost" size="icon" className="transition-all duration-300">
+              <Bell className="h-4 w-4" />
+              <span className="sr-only">通知</span>
+            </Button>
             <ThemeToggle />
           </div>
         </header>

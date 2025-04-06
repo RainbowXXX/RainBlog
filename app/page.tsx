@@ -1,3 +1,5 @@
+'use server'
+
 import Link from "next/link"
 import { BlogPostCard } from "@/components/blog-post-card"
 import { NewsletterSignup } from "@/components/newsletter-signup"
