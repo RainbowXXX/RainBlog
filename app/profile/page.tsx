@@ -1,39 +1,61 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Switch } from "@/components/ui/switch"
-import { Camera, Save } from 'lucide-react'
-import { toast } from "@/hooks/use-toast"
-import { authAPI } from "@/lib/api"
+import type React from "react"
+import {useEffect, useState} from "react"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Textarea} from "@/components/ui/textarea"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {Label} from "@/components/ui/label"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Switch} from "@/components/ui/switch"
+import {Camera, Save} from "lucide-react"
+import {useAuth} from "@/contexts/auth-context"
+import {useAuthGuard} from "@/hooks/use-auth-guard"
 
 export default function ProfilePage() {
+    // Protect this route
+    useAuthGuard()
+
+    const {user, updateUser, logout} = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [profileData, setProfileData] = useState({
-        name: "王静",
-        email: "wang@example.com",
-        bio: "热爱阅读和写作的技术爱好者。关注前端开发和用户体验设计。",
+        name: "",
+        email: "",
+        bio: "",
         website: "",
         twitter: "",
         github: "",
-        location: "北京",
+        location: "",
         emailNotifications: true,
         newsletterSubscription: true,
     })
 
+    // Initialize form with user data when available
+    useEffect(() => {
+        if (user) {
+            setProfileData({
+                name: user.name || "",
+                email: user.email || "",
+                bio: user.bio || "",
+                website: user.website || "",
+                twitter: user.twitter || "",
+                github: user.github || "",
+                location: user.location || "",
+                emailNotifications: user.emailNotifications !== false,
+                newsletterSubscription: user.newsletterSubscription !== false,
+            })
+        }
+    }, [user])
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setProfileData((prev) => ({ ...prev, [name]: value }))
+        const {name, value} = e.target
+        setProfileData((prev) => ({...prev, [name]: value}))
     }
 
     const handleSwitchChange = (name: string, checked: boolean) => {
-        setProfileData((prev) => ({ ...prev, [name]: checked }))
+        setProfileData((prev) => ({...prev, [name]: checked}))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -41,18 +63,7 @@ export default function ProfilePage() {
         setIsLoading(true)
 
         try {
-            // 模拟API调用
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            toast({
-                title: "个人资料已更新",
-                description: "您的个人资料信息已成功保存",
-            })
-        } catch (error) {
-            toast({
-                title: "更新失败",
-                description: error instanceof Error ? error.message : "发生未知错误",
-                variant: "destructive",
-            })
+            await updateUser(profileData)
         } finally {
             setIsLoading(false)
         }
@@ -60,49 +71,32 @@ export default function ProfilePage() {
 
     const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault()
+        // Password change would be handled by the API
         setIsLoading(true)
 
         try {
-            // 模拟API调用
+            // Simulate API call
             await new Promise((resolve) => setTimeout(resolve, 1000))
-            toast({
-                title: "密码已更新",
-                description: "您的密码已成功修改",
-            })
-        } catch (error) {
-            toast({
-                title: "更新失败",
-                description: error instanceof Error ? error.message : "发生未知错误",
-                variant: "destructive",
-            })
         } finally {
             setIsLoading(false)
         }
     }
 
     const handleLogout = async () => {
-        setIsLoading(true)
-        try {
-            await authAPI.logout()
-            toast({
-                title: "已登出",
-                description: "您已成功登出账户",
-            })
-            window.location.href = "/"
-        } catch (error) {
-            toast({
-                title: "登出失败",
-                description: "请稍后再试",
-                variant: "destructive",
-            })
-        } finally {
-            setIsLoading(false)
-        }
+        await logout()
+    }
+
+    if (!user) {
+        return (
+            <div className="flex justify-center items-center min-h-[60vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        )
     }
 
     return (
-        <div className="container mx-auto py-8 px-4 max-w-4xl animate-fadeIn">
-            <h1 className="text-3xl font-bold mb-8">个人资料</h1>
+        <div className="space-y-6 animate-fadeIn">
+            <h1 className="text-3xl font-bold">个人资料</h1>
 
             <Tabs defaultValue="profile" className="w-full">
                 <TabsList className="mb-6">
@@ -122,15 +116,17 @@ export default function ProfilePage() {
                                 <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
                                     <div className="relative">
                                         <Avatar className="h-24 w-24">
-                                            <AvatarImage src="/placeholder.svg?height=96&width=96" alt="王静" />
-                                            <AvatarFallback className="text-2xl">王</AvatarFallback>
+                                            <AvatarImage src="/placeholder.svg?height=96&width=96"
+                                                         alt={profileData.name}/>
+                                            <AvatarFallback
+                                                className="text-2xl">{profileData.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <Button
                                             variant="outline"
                                             size="icon"
                                             className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-background"
                                         >
-                                            <Camera className="h-4 w-4" />
+                                            <Camera className="h-4 w-4"/>
                                             <span className="sr-only">更换头像</span>
                                         </Button>
                                     </div>
@@ -138,13 +134,8 @@ export default function ProfilePage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="name">姓名</Label>
-                                                <Input
-                                                    id="name"
-                                                    name="name"
-                                                    value={profileData.name}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
+                                                <Input id="name" name="name" value={profileData.name}
+                                                       onChange={handleInputChange} required/>
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="email">邮箱</Label>
@@ -245,7 +236,7 @@ export default function ProfilePage() {
                     </span>
                                     ) : (
                                         <span className="flex items-center">
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="mr-2 h-4 w-4"/>
                       保存更改
                     </span>
                                     )}
@@ -255,6 +246,7 @@ export default function ProfilePage() {
                     </form>
                 </TabsContent>
 
+                {/* Account settings tab */}
                 <TabsContent value="account">
                     <Card>
                         <CardHeader>
@@ -285,39 +277,16 @@ export default function ProfilePage() {
                                     onCheckedChange={(checked) => handleSwitchChange("newsletterSubscription", checked)}
                                 />
                             </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="language">界面语言</Label>
-                                <select
-                                    id="language"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <option value="zh-CN">简体中文</option>
-                                    <option value="en-US">English (US)</option>
-                                    <option value="ja-JP">日本語</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="timezone">时区</Label>
-                                <select
-                                    id="timezone"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <option value="Asia/Shanghai">中国标准时间 (UTC+8)</option>
-                                    <option value="America/New_York">美国东部时间 (UTC-5)</option>
-                                    <option value="Europe/London">格林威治标准时间 (UTC+0)</option>
-                                    <option value="Europe/Paris">中欧时间 (UTC+1)</option>
-                                    <option value="Asia/Tokyo">日本标准时间 (UTC+9)</option>
-                                </select>
-                            </div>
                         </CardContent>
                         <CardFooter className="flex justify-end">
-                            <Button>保存更改</Button>
+                            <Button onClick={handleSubmit} disabled={isLoading}>
+                                保存更改
+                            </Button>
                         </CardFooter>
                     </Card>
                 </TabsContent>
 
+                {/* Security tab */}
                 <TabsContent value="security">
                     <div className="space-y-6">
                         <Card>
@@ -328,15 +297,15 @@ export default function ProfilePage() {
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="currentPassword">当前密码</Label>
-                                    <Input id="currentPassword" type="password" required />
+                                    <Input id="currentPassword" type="password" required/>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="newPassword">新密码</Label>
-                                    <Input id="newPassword" type="password" required />
+                                    <Input id="newPassword" type="password" required/>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="confirmPassword">确认新密码</Label>
-                                    <Input id="confirmPassword" type="password" required />
+                                    <Input id="confirmPassword" type="password" required/>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end">
@@ -362,9 +331,7 @@ export default function ProfilePage() {
 
                                 <div className="flex flex-col space-y-2 pt-4 border-t">
                                     <h3 className="text-lg font-medium text-destructive">删除账户</h3>
-                                    <p className="text-sm text-muted-foreground">
-                                        永久删除您的账户和所有相关数据。此操作无法撤销。
-                                    </p>
+                                    <p className="text-sm text-muted-foreground">永久删除您的账户和所有相关数据。此操作无法撤销。</p>
                                     <Button variant="destructive" className="w-fit">
                                         删除账户
                                     </Button>
@@ -377,3 +344,4 @@ export default function ProfilePage() {
         </div>
     )
 }
+

@@ -1,20 +1,19 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, CalendarIcon, ImageIcon, Save } from "lucide-react"
-import { postsAPI } from "@/lib/api"
-import { toast } from "@/hooks/use-toast"
+import {useState} from "react"
+import {useRouter} from "next/navigation"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Textarea} from "@/components/ui/textarea"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {Label} from "@/components/ui/label"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Switch} from "@/components/ui/switch"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {ArrowLeft, CalendarIcon, ImageIcon, Save} from "lucide-react"
+import {postsAPI} from "@/lib/api"
+import {toast} from "@/hooks/use-toast"
 
 export default function NewPostPage() {
     const router = useRouter()
@@ -33,16 +32,16 @@ export default function NewPostPage() {
     })
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setPostData((prev) => ({ ...prev, [name]: value }))
+        const {name, value} = e.target
+        setPostData((prev) => ({...prev, [name]: value}))
     }
 
     const handleSelectChange = (name: string, value: string) => {
-        setPostData((prev) => ({ ...prev, [name]: value }))
+        setPostData((prev) => ({...prev, [name]: value}))
     }
 
     const handleSwitchChange = (name: string, checked: boolean) => {
-        setPostData((prev) => ({ ...prev, [name]: checked }))
+        setPostData((prev) => ({...prev, [name]: checked}))
     }
 
     const generateSlug = () => {
@@ -50,7 +49,7 @@ export default function NewPostPage() {
             .toLowerCase()
             .replace(/[^\w\s]/gi, "")
             .replace(/\s+/g, "-")
-        setPostData((prev) => ({ ...prev, slug }))
+        setPostData((prev) => ({...prev, slug}))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -80,7 +79,7 @@ export default function NewPostPage() {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4"/>
                     </Button>
                     <div>
                         <h1 className="text-3xl font-bold">新建文章</h1>
@@ -88,7 +87,8 @@ export default function NewPostPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" disabled={isLoading} onClick={() => handleSelectChange("status", "draft")}>
+                    <Button variant="outline" disabled={isLoading}
+                            onClick={() => handleSelectChange("status", "draft")}>
                         保存草稿
                     </Button>
                     <Button
@@ -96,7 +96,7 @@ export default function NewPostPage() {
                         disabled={isLoading}
                         onClick={() => handleSelectChange("status", "published")}
                     >
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 h-4 w-4"/>
                         发布
                     </Button>
                 </div>
@@ -182,7 +182,7 @@ export default function NewPostPage() {
                                             placeholder="输入图片URL或上传图片"
                                         />
                                         <Button type="button" variant="outline" className="flex-shrink-0">
-                                            <ImageIcon className="mr-2 h-4 w-4" />
+                                            <ImageIcon className="mr-2 h-4 w-4"/>
                                             上传
                                         </Button>
                                     </div>
@@ -200,7 +200,7 @@ export default function NewPostPage() {
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="seoTitle">SEO标题</Label>
-                                    <Input id="seoTitle" placeholder="输入SEO标题（留空则使用文章标题）" />
+                                    <Input id="seoTitle" placeholder="输入SEO标题（留空则使用文章标题）"/>
                                 </div>
 
                                 <div className="space-y-2">
@@ -214,7 +214,7 @@ export default function NewPostPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="seoKeywords">关键词</Label>
-                                    <Input id="seoKeywords" placeholder="输入关键词，用逗号分隔" />
+                                    <Input id="seoKeywords" placeholder="输入关键词，用逗号分隔"/>
                                 </div>
 
                                 <div className="flex items-center justify-between">
@@ -222,7 +222,7 @@ export default function NewPostPage() {
                                         <Label htmlFor="noindex">禁止索引</Label>
                                         <p className="text-sm text-muted-foreground">阻止搜索引擎索引此文章</p>
                                     </div>
-                                    <Switch id="noindex" />
+                                    <Switch id="noindex"/>
                                 </div>
                             </CardContent>
                         </Card>
@@ -242,7 +242,7 @@ export default function NewPostPage() {
                                         onValueChange={(value) => handleSelectChange("categoryId", value)}
                                     >
                                         <SelectTrigger id="category">
-                                            <SelectValue placeholder="选择分类" />
+                                            <SelectValue placeholder="选择分类"/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="1">技术</SelectItem>
@@ -256,7 +256,7 @@ export default function NewPostPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="tags">标签</Label>
-                                    <Input id="tags" placeholder="输入标签，用逗号分隔" />
+                                    <Input id="tags" placeholder="输入标签，用逗号分隔"/>
                                 </div>
 
                                 <div className="space-y-2">
@@ -270,7 +270,7 @@ export default function NewPostPage() {
                                             onChange={handleInputChange}
                                         />
                                         <Button type="button" variant="outline" className="flex-shrink-0">
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            <CalendarIcon className="mr-2 h-4 w-4"/>
                                             现在
                                         </Button>
                                     </div>
@@ -278,9 +278,10 @@ export default function NewPostPage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="status">状态</Label>
-                                    <Select value={postData.status} onValueChange={(value) => handleSelectChange("status", value)}>
+                                    <Select value={postData.status}
+                                            onValueChange={(value) => handleSelectChange("status", value)}>
                                         <SelectTrigger id="status">
-                                            <SelectValue placeholder="选择状态" />
+                                            <SelectValue placeholder="选择状态"/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="draft">草稿</SelectItem>

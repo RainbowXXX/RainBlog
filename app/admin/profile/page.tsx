@@ -1,18 +1,17 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Switch } from "@/components/ui/switch"
-import { Camera, Save } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import {useState} from "react"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Textarea} from "@/components/ui/textarea"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {Label} from "@/components/ui/label"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import {Switch} from "@/components/ui/switch"
+import {Camera, Save} from "lucide-react"
+import {toast} from "@/hooks/use-toast"
 
 export default function AdminProfilePage() {
     const [isLoading, setIsLoading] = useState(false)
@@ -29,12 +28,12 @@ export default function AdminProfilePage() {
     })
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setProfileData((prev) => ({ ...prev, [name]: value }))
+        const {name, value} = e.target
+        setProfileData((prev) => ({...prev, [name]: value}))
     }
 
     const handleSwitchChange = (name: string, checked: boolean) => {
-        setProfileData((prev) => ({ ...prev, [name]: checked }))
+        setProfileData((prev) => ({...prev, [name]: checked}))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +105,7 @@ export default function AdminProfilePage() {
                                 <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
                                     <div className="relative">
                                         <Avatar className="h-24 w-24">
-                                            <AvatarImage src="/placeholder.svg?height=96&width=96" alt="张美丽" />
+                                            <AvatarImage src="/placeholder.svg?height=96&width=96" alt="张美丽"/>
                                             <AvatarFallback className="text-2xl">张</AvatarFallback>
                                         </Avatar>
                                         <Button
@@ -114,7 +113,7 @@ export default function AdminProfilePage() {
                                             size="icon"
                                             className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-background"
                                         >
-                                            <Camera className="h-4 w-4" />
+                                            <Camera className="h-4 w-4"/>
                                             <span className="sr-only">更换头像</span>
                                         </Button>
                                     </div>
@@ -122,7 +121,8 @@ export default function AdminProfilePage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="name">姓名</Label>
-                                                <Input id="name" name="name" value={profileData.name} onChange={handleInputChange} required />
+                                                <Input id="name" name="name" value={profileData.name}
+                                                       onChange={handleInputChange} required/>
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="email">邮箱</Label>
@@ -223,7 +223,7 @@ export default function AdminProfilePage() {
                     </span>
                                     ) : (
                                         <span className="flex items-center">
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="mr-2 h-4 w-4"/>
                       保存更改
                     </span>
                                     )}
@@ -294,15 +294,15 @@ export default function AdminProfilePage() {
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="currentPassword">当前密码</Label>
-                                    <Input id="currentPassword" type="password" required />
+                                    <Input id="currentPassword" type="password" required/>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="newPassword">新密码</Label>
-                                    <Input id="newPassword" type="password" required />
+                                    <Input id="newPassword" type="password" required/>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="confirmPassword">确认新密码</Label>
-                                    <Input id="confirmPassword" type="password" required />
+                                    <Input id="confirmPassword" type="password" required/>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end">

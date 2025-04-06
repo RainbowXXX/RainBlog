@@ -1,15 +1,14 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import {useState} from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Mail } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {ArrowLeft, Mail} from "lucide-react"
+import {toast} from "@/hooks/use-toast"
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("")
@@ -46,7 +45,7 @@ export default function ForgotPasswordPage() {
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" asChild className="h-8 w-8">
                             <Link href="/login">
-                                <ArrowLeft className="h-4 w-4" />
+                                <ArrowLeft className="h-4 w-4"/>
                                 <span className="sr-only">返回</span>
                             </Link>
                         </Button>
@@ -100,7 +99,7 @@ export default function ForgotPasswordPage() {
                   </span>
                                 ) : (
                                     <span className="flex items-center">
-                    <Mail className="mr-2 h-4 w-4" />
+                    <Mail className="mr-2 h-4 w-4"/>
                     发送重置链接
                   </span>
                                 )}
@@ -108,8 +107,9 @@ export default function ForgotPasswordPage() {
                         </form>
                     ) : (
                         <div className="text-center py-4">
-                            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                                <Mail className="h-6 w-6 text-primary" />
+                            <div
+                                className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                                <Mail className="h-6 w-6 text-primary"/>
                             </div>
                             <h3 className="text-lg font-medium mb-2">检查您的邮箱</h3>
                             <p className="text-muted-foreground mb-4">我们已向 {email} 发送了一封包含密码重置链接的电子邮件。</p>

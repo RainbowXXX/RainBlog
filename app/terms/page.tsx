@@ -1,7 +1,3 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from 'lucide-react'
-
 export default function TermsPage() {
     return (
         <div className="container mx-auto py-12 px-4 max-w-4xl animate-fadeIn">
@@ -30,9 +26,7 @@ export default function TermsPage() {
                 </p>
 
                 <h2>4. 禁止行为</h2>
-                <p>
-                    您同意不会：
-                </p>
+                <p>您同意不会：</p>
                 <ul>
                     <li>违反任何适用的法律法规</li>
                     <li>侵犯他人的知识产权或其他权利</li>
@@ -43,14 +37,10 @@ export default function TermsPage() {
                 </ul>
 
                 <h2>5. 知识产权</h2>
-                <p>
-                    服务及其原始内容、功能和设计是我们的专有财产，受著作权、商标和其他知识产权法律的保护。
-                </p>
+                <p>服务及其原始内容、功能和设计是我们的专有财产，受著作权、商标和其他知识产权法律的保护。</p>
 
                 <h2>6. 终止</h2>
-                <p>
-                    我们可以因任何原因或无原因，在任何时候终止或暂停您对服务的访问，包括但不限于违反这些条款。
-                </p>
+                <p>我们可以因任何原因或无原因，在任何时候终止或暂停您对服务的访问，包括但不限于违反这些条款。</p>
 
                 <h2>7. 免责声明</h2>
                 <p>
@@ -58,20 +48,15 @@ export default function TermsPage() {
                 </p>
 
                 <h2>8. 责任限制</h2>
-                <p>
-                    在任何情况下，我们对您因使用或无法使用服务而导致的任何损失或损害不承担责任。
-                </p>
+                <p>在任何情况下，我们对您因使用或无法使用服务而导致的任何损失或损害不承担责任。</p>
 
                 <h2>9. 条款变更</h2>
-                <p>
-                    我们保留在任何时候修改或替换这些条款的权利。如果修订是重大的，我们将尝试提前至少30天通知。
-                </p>
+                <p>我们保留在任何时候修改或替换这些条款的权利。如果修订是重大的，我们将尝试提前至少30天通知。</p>
 
                 <h2>10. 联系我们</h2>
-                <p>
-                    如果您对这些条款有任何疑问，请联系我们：contact@example.com
-                </p>
+                <p>如果您对这些条款有任何疑问，请联系我们：contact@example.com</p>
             </div>
         </div>
     )
 }
+

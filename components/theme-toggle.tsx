@@ -1,6 +1,6 @@
 "use client"
 import {Moon, Sun} from "lucide-react"
-import {useTheme} from "@/components/theme-provider"
+import {useTheme} from "@/contexts"
 import {Button} from "@/components/ui/button"
 
 export function ThemeToggle() {
@@ -11,7 +11,7 @@ export function ThemeToggle() {
             variant="ghost"
             size="icon"
             className="transition-all duration-300"
-            onClick={() => setTheme(theme === "light" ? "dark": "light")}
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
         >
             {theme === "light" && <Sun className="h-5 w-5"/>}
             {theme === "dark" && <Moon className="h-5 w-5"/>}
